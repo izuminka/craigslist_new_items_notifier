@@ -100,10 +100,6 @@ min_price = 10
 max_price = 50
 begin_date_time = '2019-12-20 00:00'
 
-# query times
-sleep_time = 60*60*1 #secs
-total_duration = 1*sleep_time
-
 # Email info
 email_adr = 'something@gmail.com'
 psw = 'somepassword'
@@ -114,34 +110,29 @@ dt_file_name = "last_query_dt.txt"
 query_res_file_name = 'log.txt'
 init(begin_date_time, dt_file_name,query_res_file_name)
 
-duration = 0  # secs
-while duration < total_duration:
-    # query craigslist
-    cl_sale = CraigslistForSale(site='santabarbara', category='sss',
-                                filters={'query': my_query,
-                                         'min_price': min_price,
-                                         'max_price': max_price})
-    # CraigslistForSale.show_filters()
-    results = list(cl_sale.get_results(sort_by='newest'))
+# query craigslist
+cl_sale = CraigslistForSale(site='santabarbara', category='sss',
+                            filters={'query': my_query,
+                                     'min_price': min_price,
+                                     'max_price': max_price})
+# CraigslistForSale.show_filters()
+results = list(cl_sale.get_results(sort_by='newest'))
 
-    # get the results since the last date time of the query
-    dt_query = open(dt_file_name).read().strip()
-    results_fresh = [d for d in results if isLaterDate(d['datetime'], dt_query)]
+# get the results since the last date time of the query
+dt_query = open(dt_file_name).read().strip()
+results_fresh = [d for d in results if isLaterDate(d['datetime'], dt_query)]
 
-    # update the last date time of quering
-    dt_query_new = datetime.now().strftime("%Y-%m-%d %H:%M")
-    with open(dt_file_name, 'w') as f:
-        f.write(dt_query_new)
+# update the last date time of quering
+dt_query_new = datetime.now().strftime("%Y-%m-%d %H:%M")
+with open(dt_file_name, 'w') as f:
+    f.write(dt_query_new)
 
-    # save in human readable format if new query results are non empty
-    query_period = dt_query + ' --> ' + dt_query_new
-    msg = results_msg(results_fresh, query_period)
-    if msg:
-        # save the results to log
-        with open(query_res_file_name, 'a') as f:
-            f.write(msg)
-        # email the results
-        send_gmail(email_adr, psw, 'craigslist results', msg)
-
-    duration += sleep_time
-    time.sleep(sleep_time)
+# save in human readable format if new query results are non empty
+query_period = dt_query + ' --> ' + dt_query_new
+msg = results_msg(results_fresh, query_period)
+if msg:
+    # save the results to log
+    with open(query_res_file_name, 'a') as f:
+        f.write(msg)
+    # email the results
+    send_gmail(email_adr, psw, 'craigslist results', msg)
