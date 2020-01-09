@@ -1,8 +1,9 @@
-from craigslist import CraigslistForSale  # to get info from cl
 from datetime import datetime  # to update the last query dt
 import time  # to sleep btw the queries
 import smtplib  # to send the email
 from os import path  # to check if the log exists in the dir
+from craigslist import CraigslistForSale  # to get info from cl
+import json  # to parse the setup.json
 
 
 def conv_date_time(dt):
@@ -72,7 +73,7 @@ def send_gmail(email_adr, psw, subj, msg):
     server.sendmail(email_adr, email_adr, f'Subject: {subj}\n\n{msg}')
 
 
-def init(begin_date_time, dt_file_name,query_res_file_name):
+def init(begin_date_time, dt_file_name, query_res_file_name):
     """Initialize log and query time start
 
     Args:
@@ -94,28 +95,21 @@ def init(begin_date_time, dt_file_name,query_res_file_name):
         f.close()
 
 
-# Craigslist query stuff
-my_query = 'dresser'
-min_price = 10
-max_price = 50
-begin_date_time = '2019-12-20 00:00'
-
-# Email info
-email_adr = 'something@gmail.com'
-psw = 'somepassword'
-
+# user params setup
+with open('user_setup.json') as f:
+    setup = json.load(f)
 
 # init the starting query date time and log.txt if does not exist
 dt_file_name = "last_query_dt.txt"
 query_res_file_name = 'log.txt'
-init(begin_date_time, dt_file_name,query_res_file_name)
+init(setup['begin_date_time'], dt_file_name, query_res_file_name)
 
 # query craigslist
+# CraigslistForSale.show_filters() for additional filters
 cl_sale = CraigslistForSale(site='santabarbara', category='sss',
-                            filters={'query': my_query,
-                                     'min_price': min_price,
-                                     'max_price': max_price})
-# CraigslistForSale.show_filters()
+                            filters={'query': setup['my_query'],
+                                     'min_price': setup['min_price'],
+                                     'max_price': setup['max_price']})
 results = list(cl_sale.get_results(sort_by='newest'))
 
 # get the results since the last date time of the query
@@ -135,4 +129,4 @@ if msg:
     with open(query_res_file_name, 'a') as f:
         f.write(msg)
     # email the results
-    send_gmail(email_adr, psw, 'craigslist results', msg)
+    send_gmail(setup['gmail'], setup['gmail_psw'], 'craigslist results', msg)

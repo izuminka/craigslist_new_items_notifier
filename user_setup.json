@@ -1,0 +1,9 @@
+{
+    "gmail": "some_name@gmail.com",
+    "gmail_psw": "somepassword",
+    "my_query": "dresser",
+    "begin_date_time" : "2019-12-20 00:00",
+    "min_price": 10,
+    "max_price": 50,
+    "hours": 2
+  }
