@@ -90,7 +90,7 @@ def one_total_query():
 
     # query craigslist
     # CraigslistForSale.show_filters() for additional filters
-    cl_sale = CraigslistForSale(site='santabarbara', category='sss',
+    cl_sale = CraigslistForSale(site=setup['city'], category='sss',
                                 filters={'query': setup['my_query'],
                                          'min_price': setup['min_price'],
                                          'max_price': setup['max_price']})

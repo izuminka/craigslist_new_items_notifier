@@ -9,9 +9,9 @@ will send you all new postings to your gmail.
 - **[Python 3](https://www.python.org/downloads/)**
 
 - **Gmail account**
-  - [Enable 2 step verification](https://www.google.com/landing/2step/),
-  - [Generate App Password](https://myaccount.google.com)
-  
+    - [Enable 2 step verification](https://www.google.com/landing/2step/),
+    - [Generate App Password](https://myaccount.google.com)
+
 - **[python-craigslist](https://pypi.org/project/python-craigslist)** - Craigslist wrapper
 
 - **[APScheduler](https://pypi.org/project/APScheduler/2.1.2)** - Advanced Python Scheduler
@@ -26,6 +26,7 @@ After installing the prerequisites open user_setup.json and enter information
 related to the query:
 - "gmail": your gmail address
 - "gmail_psw": the generated password from https://myaccount.google.com
+- "city": city/area you want to search (found https://city.craigslist.org/)
 - "my_query": your Craigslist query
 - "begin_date_time" :  ex: "2019-12-20 00:00"
 - "min_price": min price for the item ex: 10
