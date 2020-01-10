@@ -9,16 +9,15 @@ will send you all new postings to your gmail.
 - **[Python 3](https://www.python.org/downloads/)**
 
 - **Gmail account**
- - [Enable 2 step verification](https://www.google.com/landing/2step/),
- - [Generate App Password](https://myaccount.google.com)
-
+  - [Enable 2 step verification](https://www.google.com/landing/2step/),
+  - [Generate App Password](https://myaccount.google.com)
+  
 - **[python-craigslist](https://pypi.org/project/python-craigslist)** - Craigslist wrapper
 
 - **[APScheduler](https://pypi.org/project/APScheduler/2.1.2)** - Advanced Python Scheduler
 
-
-    pip install python-craigslist
-    pip install APScheduler=3.6.3
+       pip install python-craigslist
+       pip install APScheduler=3.6.3
 
 
 # Configuring
@@ -35,7 +34,7 @@ related to the query:
 
 Once the user_setup.json is done, open the terminal and type:
 
-    python main.py
+       python main.py
 
 
 <!--
