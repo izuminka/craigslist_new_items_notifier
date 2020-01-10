@@ -5,5 +5,5 @@
     "begin_date_time" : "2019-12-20 00:00",
     "min_price": 10,
     "max_price": 50,
-    "hours": 2
+    "hours": 0.003
   }

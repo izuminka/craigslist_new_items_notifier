@@ -2,6 +2,7 @@ from datetime import datetime  # to update the last query dt
 import time  # to sleep btw the queries
 import smtplib  # to send the email
 from os import path  # to check if the log exists in the dir
+from apscheduler.schedulers.blocking import BlockingScheduler # for rep. queries
 from craigslist import CraigslistForSale  # to get info from cl
 import json  # to parse the setup.json
 
@@ -95,38 +96,51 @@ def init(begin_date_time, dt_file_name, query_res_file_name):
         f.close()
 
 
-# user params setup
-with open('user_setup.json') as f:
+def one_total_query():
+    """Main. Perform the full query"""
+
+    # user params setup
+    with open('user_setup.json') as f:
+        setup = json.load(f)
+
+    # init the starting query date time and log.txt if does not exist
+    dt_file_name = "last_query_dt.txt"
+    query_res_file_name = 'log.txt'
+    init(setup['begin_date_time'], dt_file_name, query_res_file_name)
+
+    # query craigslist
+    # CraigslistForSale.show_filters() for additional filters
+    cl_sale = CraigslistForSale(site='santabarbara', category='sss',
+                                filters={'query': setup['my_query'],
+                                         'min_price': setup['min_price'],
+                                         'max_price': setup['max_price']})
+    results = list(cl_sale.get_results(sort_by='newest'))
+
+    # get the results since the last date time of the query
+    dt_query = open(dt_file_name).read().strip()
+    results_fresh = [d for d in results if isLaterDate(d['datetime'], dt_query)]
+
+    # update the last date time of quering
+    dt_query_new = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(dt_file_name, 'w') as f:
+        f.write(dt_query_new)
+
+    # save in human readable format if new query results are non empty
+    query_period = dt_query + ' --> ' + dt_query_new
+    msg = results_msg(results_fresh, query_period)
+    if msg:
+        # save the results to log
+        with open(query_res_file_name, 'a') as f:
+            f.write(msg)
+        # email the results
+        send_gmail(setup['gmail'], setup['gmail_psw'], 'craigslist results', msg)
+    print(query_period, 'finished')
+
+
+if __name__ == '__main__':
+    f = open('user_setup.json')
     setup = json.load(f)
-
-# init the starting query date time and log.txt if does not exist
-dt_file_name = "last_query_dt.txt"
-query_res_file_name = 'log.txt'
-init(setup['begin_date_time'], dt_file_name, query_res_file_name)
-
-# query craigslist
-# CraigslistForSale.show_filters() for additional filters
-cl_sale = CraigslistForSale(site='santabarbara', category='sss',
-                            filters={'query': setup['my_query'],
-                                     'min_price': setup['min_price'],
-                                     'max_price': setup['max_price']})
-results = list(cl_sale.get_results(sort_by='newest'))
-
-# get the results since the last date time of the query
-dt_query = open(dt_file_name).read().strip()
-results_fresh = [d for d in results if isLaterDate(d['datetime'], dt_query)]
-
-# update the last date time of quering
-dt_query_new = datetime.now().strftime("%Y-%m-%d %H:%M")
-with open(dt_file_name, 'w') as f:
-    f.write(dt_query_new)
-
-# save in human readable format if new query results are non empty
-query_period = dt_query + ' --> ' + dt_query_new
-msg = results_msg(results_fresh, query_period)
-if msg:
-    # save the results to log
-    with open(query_res_file_name, 'a') as f:
-        f.write(msg)
-    # email the results
-    send_gmail(setup['gmail'], setup['gmail_psw'], 'craigslist results', msg)
+    f.close()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(one_total_query, 'interval', hours=setup['hours'])
+    scheduler.start()
