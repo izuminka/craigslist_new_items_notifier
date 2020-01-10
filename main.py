@@ -74,39 +74,19 @@ def send_gmail(email_adr, psw, subj, msg):
     server.sendmail(email_adr, email_adr, f'Subject: {subj}\n\n{msg}')
 
 
-def init(begin_date_time, dt_file_name, query_res_file_name):
-    """Initialize log and query time start
-
-    Args:
-        begin_date_time (str): date time of staring query in %Y-%m-%d %H:%M format
-        dt_file_name (str): name of the file where dt of queries are saved
-        query_res_file_name (str): name of the file where res of queries are saved
-
-    Returns:
-        None
-    """
-    # initialize the starting query date time
-    if not path.exists(dt_file_name):
-        with open(dt_file_name, 'w') as f:
-            f.write(begin_date_time)
-
-    # init log.txt if does not exist
-    if not path.exists(query_res_file_name):
-        f = open(query_res_file_name, "w")
-        f.close()
-
-
 def one_total_query():
     """Main. Perform the full query"""
 
     # user params setup
-    with open('user_setup.json') as f:
+    user_setup_fn = 'user_setup.json'
+    with open(user_setup_fn) as f:
         setup = json.load(f)
 
-    # init the starting query date time and log.txt if does not exist
-    dt_file_name = "last_query_dt.txt"
-    query_res_file_name = 'log.txt'
-    init(setup['begin_date_time'], dt_file_name, query_res_file_name)
+    # init log.txt if does not exist
+    query_res_fn = 'log.txt'
+    if not path.exists(query_res_fn):
+        f = open(query_res_fn, "w")
+        f.close()
 
     # query craigslist
     # CraigslistForSale.show_filters() for additional filters
@@ -117,20 +97,21 @@ def one_total_query():
     results = list(cl_sale.get_results(sort_by='newest'))
 
     # get the results since the last date time of the query
-    dt_query = open(dt_file_name).read().strip()
+    dt_query = setup['begin_date_time']
     results_fresh = [d for d in results if isLaterDate(d['datetime'], dt_query)]
 
     # update the last date time of quering
     dt_query_new = datetime.now().strftime("%Y-%m-%d %H:%M")
-    with open(dt_file_name, 'w') as f:
-        f.write(dt_query_new)
+    setup['begin_date_time'] = dt_query_new
+    with open(user_setup_fn, 'w') as f:
+        json.dump(setup,f)
 
     # save in human readable format if new query results are non empty
     query_period = dt_query + ' --> ' + dt_query_new
     msg = results_msg(results_fresh, query_period)
     if msg:
         # save the results to log
-        with open(query_res_file_name, 'a') as f:
+        with open(query_res_fn, 'a') as f:
             f.write(msg)
         # email the results
         send_gmail(setup['gmail'], setup['gmail_psw'], 'craigslist results', msg)
